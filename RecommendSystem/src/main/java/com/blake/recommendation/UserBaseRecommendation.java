@@ -312,9 +312,9 @@ public class UserBaseRecommendation extends Recommendation{
         		
         		Entry<Integer,Double> entry = (Entry<Integer,Double>) it.next();
         		int groupid = entry.getKey();
-        		int propation = GroupIdGUserLengthHM.get(groupid) / uidLength 
-        				+ hm.uidPidRatingHMInTrain.get(Integer.valueOf(givenUserId)).size() 
-        					/ GroupIdratingLengthHM.get(groupid);
+        		double propation = (double)(GroupIdGUserLengthHM.get(groupid)) / (double)uidLength 
+        				+ (double)(hm.uidPidRatingHMInTrain.get(Integer.valueOf(givenUserId)).size()) 
+        					/ (double)(GroupIdratingLengthHM.get(groupid));
         		totalPropation += propation;
         		cross_rating += entry.getValue().doubleValue() * propation;
         	}

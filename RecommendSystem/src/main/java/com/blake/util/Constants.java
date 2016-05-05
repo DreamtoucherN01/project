@@ -91,5 +91,5 @@ public class Constants {
 	/**
 	 * 
 	 */
-	public static boolean WEIGHTNEEDCALCULATED = false;
+	public static boolean WEIGHTNEEDCALCULATED = true;
 }
