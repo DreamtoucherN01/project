@@ -39,6 +39,34 @@ public class MyArray {
         return list.toArray(result);
     }
     
+    public static Integer[] intersect(String[] arr1, Integer[] arr2) {
+        //这里会自动去重
+    	arr1=MyArray.unique(arr1);
+        arr2=MyArray.unique(arr2);
+        Integer[] result={};
+        boolean flag;
+        for(int i=0;i<arr1.length;i++)
+        {
+            flag=false;
+            for(int j=0;j<arr2.length;j++)
+            {
+                if(Integer.valueOf(arr1[i]) < arr2[j]){
+                    break;
+                }
+                if((Integer.valueOf(arr1[i])).equals(arr2[j]))
+                {
+                    flag=true;
+                    break;
+                }
+            }
+            if(flag)
+            {
+                result=Arrays.copyOf(result, result.length+1);
+                result[result.length-1]=Integer.valueOf(arr1[i]);
+            }
+        }
+        return result;
+    }
 
 	public static Integer[] intersect(Integer[] arr1, Integer[] arr2) {
 

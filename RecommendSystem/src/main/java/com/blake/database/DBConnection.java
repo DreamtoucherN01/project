@@ -87,13 +87,30 @@ public class DBConnection {
     //关闭数据库连接
     public void closeConnection(){
     	
-        try{
+        try {
         	
-        	conSrc.close();
-        	conWorkspace.close();
-        }catch(SQLException ex){
+        	if(!conSrc.isClosed()) {
+        	
+        		conSrc.close();
+        	}
+        	if(!conWorkspace.isClosed()) {
+        	
+        		conWorkspace.close();
+        	}
+        } catch (SQLException ex){
         	
             ex.printStackTrace();
         }
     }
+
+	public void closeConnection(Connection conSrc) {
+
+		try{
+			
+			conSrc.close();
+		} catch (SQLException e){
+			
+			e.printStackTrace();
+		}
+	}
 }

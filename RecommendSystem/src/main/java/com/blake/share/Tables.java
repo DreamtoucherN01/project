@@ -8,6 +8,7 @@ public enum Tables {
 	category("category",3),
 	
 	useritemrating("useritemrating",4),
+	useritemratingtest("useritemratingtest",12),
 	categoryparent("categoryparent",5),
 	itemcategory("itemcategory",6),
 	levelcategory("levelcategory",7),

@@ -563,8 +563,7 @@ public class Effect {
 		for (int i = 0; i < guess_pid.length; i++) {
 			for (int j = 5; j >= 1; j--) {
 				if (RatingPid[j].contains(guess_pid[i])) {
-					ndcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1)
-							* Math.log(2); // 假设公式中的r(j)即为评分
+					ndcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1) * Math.log(2); // 假设公式中的r(j)即为评分
 					number[j]++;
 				}
 			}
@@ -573,8 +572,7 @@ public class Effect {
 		int i = 0;
 		for (int j = 5; j >= 1; j--) {
 			while (number[j] > 0) {
-				idcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1)
-						* Math.log(2);
+				idcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1) * Math.log(2);
 				i++;
 				number[j]--;
 			}

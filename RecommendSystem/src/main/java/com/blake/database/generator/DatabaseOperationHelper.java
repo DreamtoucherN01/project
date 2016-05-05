@@ -1,19 +1,14 @@
 package com.blake.database.generator;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.HashMap;
-
-import com.blake.share.Tables;
 
 public class DatabaseOperationHelper{
 
-	Connection con;
+	HashMap<Integer, HashMap<Integer, Double>> uidPidRatingHMInTrain;
 	
-	public DatabaseOperationHelper(Connection con) {
+	public DatabaseOperationHelper(HashMap<Integer, HashMap<Integer, Double>> uidPidRatingHMInTrain) {
 		
-		this.con = con;
+		this.uidPidRatingHMInTrain = uidPidRatingHMInTrain;
 	}
 
 	public HashMap<Integer, Integer> getUserTotalReviewByUserIdItemId(
@@ -24,31 +19,24 @@ public class DatabaseOperationHelper{
 			
 			return userTotalReview;
 		}
-		try {
+		for(String uid : usersIdArr) {
 			
-			String sql = "select user,count(*) from " + Tables.useritemrating.getTableName() +
-					"  where user in (" + usersIdArr[0];
-			for (int i = 1; i < usersIdArr.length; i++) {
-				sql += "," + usersIdArr[i];
-			}
-			sql += ") and item in (" + itemsIdArr[0];
-			for (int i = 1; i < itemsIdArr.length; i++) {
-				sql += "," + itemsIdArr[i];
-			}
-			sql += ") group by user";
-			
-			PreparedStatement pre = con.prepareCall(sql);
-			ResultSet rs = pre.executeQuery();
-			while (rs.next()) {
+			int totalReview = 0;
+			HashMap<Integer, Double> pidRating = uidPidRatingHMInTrain.get(Integer.valueOf(uid));
+			if(null != pidRating) {
 				
-				int uid = rs.getInt(1);
-				int totalReview = rs.getInt(2);
-				userTotalReview.put(new Integer(uid), new Integer(totalReview));
+				for(String pid : itemsIdArr) {
+					
+					if(!pid.equals("") && null != pidRating.get(Integer.valueOf(pid))){
+						
+						totalReview++;
+					}
+				}
+			} else {
+				
+				continue;
 			}
-			rs.close();
-			pre.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+			userTotalReview.put(new Integer(uid), new Integer(totalReview));
 		}
 		return userTotalReview;
 	}

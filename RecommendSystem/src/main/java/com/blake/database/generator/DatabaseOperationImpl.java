@@ -60,7 +60,7 @@ public class DatabaseOperationImpl  extends DatabaseOperation {
 			pre.executeUpdate();
 			pre.close();
 		} catch (Exception e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 	}
 	
@@ -90,10 +90,11 @@ public class DatabaseOperationImpl  extends DatabaseOperation {
 	public void insertIntoGroupUserTable(int groupId, String[] userIdArrSrc,
 			String[] itemsIdArr, HashMapHarness hm) {
 		
-		String[] userIdArr = MyArray.intersect(userIdArrSrc, hm.userIdInTest);
+		String[] userIdArr = MyArray.intersect(userIdArrSrc, hm.userIdInTrain);
 		String sql = "insert into " + Tables.fromString("group_user").getTableName()
 						+ " (group_id,user_id,userTotalReview,importance) values (?,?,?,?)";
-		HashMap<Integer, Integer> userTotalReviewHM = new DatabaseOperationHelper(con).getUserTotalReviewByUserIdItemId(userIdArr, itemsIdArr);
+		HashMap<Integer, Integer> userTotalReviewHM = new DatabaseOperationHelper(hm.uidPidRatingHMInTrain)
+																.getUserTotalReviewByUserIdItemId(userIdArr, itemsIdArr);
 		if(null == userTotalReviewHM || userTotalReviewHM.isEmpty()) {
 			
 			return;

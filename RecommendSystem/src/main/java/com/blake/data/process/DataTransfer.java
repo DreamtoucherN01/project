@@ -4,15 +4,22 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import com.blake.data.organize.LevelCategory;
 import com.blake.share.Importance;
 import com.blake.share.Tables;
+import com.blake.util.Constants;
 
 public class DataTransfer {
 	
 	Connection conSrc;
 	Connection conWorkspace;
+	
+	private HashMap<Integer,Integer> usercount = new HashMap<Integer,Integer>();
+	
+	private int count = 0;
+	private int curusr = 0;
 	
 	public DataTransfer(Connection conSrc , Connection conWorkspace) {
 		
@@ -23,32 +30,31 @@ public class DataTransfer {
 	public void dataTransfer() {
 		
 		System.out.println(this.getClass().getName() + " dataTransfer");
+		getUserCountHashMap();
 		PreparedStatement pre;
 		try {
 			
-			pre = conSrc.prepareCall("SELECT * FROM review order by iduser");
+			pre = conSrc.prepareCall("SELECT * FROM review where iduser < " + Constants.USER_NUMBER + " order by iduser ");
 			ResultSet rs = pre.executeQuery();
 			while(rs.next()){
 				
 				int user = rs.getInt(2);
-				if(user > 500) {
-					
-					break;
-				}
 				int item = rs.getInt(5);
 				int rating = rs.getInt(3);
 				String importance = rs.getString(4);
-				if(Importance.fromString(importance.split(" ")[0]) == null) {
+				insertintoUserItemRating(user,item,rating, Importance.fromString(importance.split(" ")[0]));
+				if(user != curusr) {
 					
-					System.out.println(importance);
+					count = 1;
 				}
-				insertintoUserItemRating(user,item,rating,Importance.fromString(importance.split(" ")[0]));
+				curusr = user;
 			}
 		} catch (SQLException e) {
 			
 			e.printStackTrace();
 		}
 		pre = null;
+		usercount = null;
 		
 		try {
 			
@@ -121,8 +127,17 @@ public class DataTransfer {
 	private void insertintoUserItemRating(int user, int item, int rating,
 			Importance importance) {
 
-		String sql="insert into " + Tables.useritemrating.getTableName() + 
-				" (user,item,rating,importance) values(?,?,?,?)";
+		count++; 
+		String sql = null;
+		if(count < usercount.get(user) * Constants.TRAIN_PROPORTION_IN_ALL) {
+			
+			sql = "insert into " + Tables.useritemrating.getTableName() + 
+					" (user,item,rating,importance) values(?,?,?,?)";
+		} else {
+		
+			sql = "insert into " + Tables.useritemratingtest.getTableName() + 
+					" (user,item,rating,importance) values(?,?,?,?)";
+		}
         PreparedStatement pre;
 		 try {
 			 pre = conWorkspace.prepareCall(sql);
@@ -135,6 +150,28 @@ public class DataTransfer {
 		 } catch (SQLException e) {
 //			e.printStackTrace();
 		 }
+	}
+	
+
+	private void getUserCountHashMap() {
+
+		PreparedStatement pre;
+		try {
+			
+			pre = conSrc.prepareCall("SELECT iduser,count(*)  FROM review where iduser < " 
+								+ Constants.USER_NUMBER + " group by iduser order by iduser ");
+			ResultSet rs = pre.executeQuery();
+			while(rs.next()){
+				
+				int user = rs.getInt(1);
+				int count = rs.getInt(2);
+				usercount.put(user, count);
+			}
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		}
+		pre = null;
 	}
 	
 }

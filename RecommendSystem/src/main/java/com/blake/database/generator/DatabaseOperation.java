@@ -9,7 +9,7 @@ import com.blake.share.Tables;
 public abstract class DatabaseOperation {
 
 	Connection con;
-	
+
 	public DatabaseOperation(Connection con) {
 		
 		this.con = con;
@@ -23,6 +23,26 @@ public abstract class DatabaseOperation {
 			
 			String sql = "CREATE TABLE IF NOT EXISTS " 
 					+ Tables.fromString("useritemrating").getTableName() 
+					+ "("
+	                + "  user int(16) NOT NULL,"
+	                + "  item int(16) NOT NULL,"
+	                + "  rating double,"
+	                + "  importance int(4),"
+	                + "  PRIMARY KEY  (user,item)"
+	                + ") ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+			pre = con.prepareCall(sql);
+			pre.executeUpdate();
+			pre.close();
+			pre = null;
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+		}
+		
+		try{
+			
+			String sql = "CREATE TABLE IF NOT EXISTS " 
+					+ Tables.fromString("useritemratingtest").getTableName() 
 					+ "("
 	                + "  user int(16) NOT NULL,"
 	                + "  item int(16) NOT NULL,"
@@ -98,9 +118,9 @@ public abstract class DatabaseOperation {
 					+ " ("
 					+ "  id int(16) NOT NULL AUTO_INCREMENT,"
 					+ "  level int(16) NOT NULL,"
-					+ "  itemsId varchar(1024) collate utf8_unicode_ci NOT NULL,"
+					+ "  itemsId text(65532) collate utf8_unicode_ci NOT NULL,"
 					+ "  support int(16) collate utf8_unicode_ci NOT NULL,"
-					+ "  usersId varchar(1024) collate utf8_unicode_ci default NULL,"
+					+ "  usersId text(65532) default NULL,"
 					+ "  totalReview int(16) collate utf8_unicode_ci default NULL,"
 					+ "  totalItemNumber int(16) collate utf8_unicode_ci default NULL,"
 					+ "  KEY id (id)"
@@ -174,6 +194,27 @@ public abstract class DatabaseOperation {
 		}
 	}
 	
+	public void truncateTables(Tables tables) {
+		
+		if(null == tables) {
+			
+			truncateTables();
+		} else {
+			
+			PreparedStatement pre;
+			try {
+				
+				pre = con.prepareCall("truncate table " + tables.getTableName());
+				pre.execute();
+				pre.close();
+				pre = null;
+			} catch (SQLException e) {
+
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public void truncateTables() {
 		
 		PreparedStatement pre;
@@ -223,5 +264,15 @@ public abstract class DatabaseOperation {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void setCon(Connection con) {
+	
+		this.con = con;
+	}
+	
+	public Connection getCon() {
+		
+		return con;
 	}
 }

@@ -2,48 +2,52 @@ package com.blake.control;
 
 import java.sql.Connection;
 
-import com.blake.category.Category;
+import com.blake.category.Group;
 import com.blake.data.process.DataTransfer;
 import com.blake.database.DBConnection;
 import com.blake.database.generator.DatabaseOperation;
 import com.blake.database.generator.DatabaseOperationImpl;
 import com.blake.effect.Effect;
+import com.blake.recommendation.ItemBaseRecommedation;
 import com.blake.recommendation.Recommendation;
+import com.blake.recommendation.UserBaseRecommendation;
 import com.blake.share.HashMapHarness;
+import com.blake.util.Constants;
 
 public class StartWorking {
 	
 	public static void main(String args[]) {
 		
 		DBConnection dbcon = new DBConnection();
-		Connection conSrc = dbcon.makeSourceConnection();
-		Connection conWorkspace = dbcon.makeWorkspaceConnection();
+		Connection conSrc = dbcon.makeSourceConnection();         // data source
+		Connection conWorkspace = dbcon.makeWorkspaceConnection();// data processor place
 		
-		//clear data
-		DatabaseOperation dbo= new DatabaseOperationImpl(conWorkspace);
-		dbo.createTables();
-		dbo.truncateTables();
+		DatabaseOperation dbo = new DatabaseOperationImpl(conWorkspace);
+//		dbo.createTables();
+//		dbo.truncateTables();
+//		
+//		DataTransfer df = new DataTransfer(conSrc, conWorkspace); // transfer data
+//		df.dataTransfer(); dbcon.closeConnection(conSrc); System.gc();
 		
-		//java 2 mib
-		DataTransfer df = new DataTransfer(conSrc, conWorkspace);
-		df.dataTransfer();
-		
-		//get HashMapData 
-		HashMapHarness hm = new HashMapHarness(conWorkspace);
+		HashMapHarness hm = new HashMapHarness(conWorkspace);    // trade space for mining time
 		hm.getHashMap();
 		
-		//frequent pattern tree
-		Category ca = new Category(hm,conWorkspace,dbo);
-		ca.mineData();
+//		Group ca = new Group(hm, dbo);
+//		ca.mineData();                                           // mine data
+		 
+		if(Constants.IS_USER_BASE) {                             // recommend 
+			
+			Recommendation re = new UserBaseRecommendation(hm, dbo);
+			((UserBaseRecommendation) re).doRecommendationByReviewSplitUserBase();
+
+		} else {
+			
+			Recommendation re = new ItemBaseRecommedation(hm, dbo);
+			((ItemBaseRecommedation) re).doRecommendationByReviewSplitItemBase();
 		
-		//recommendation
-		Recommendation re = new Recommendation(hm,conWorkspace,dbo);
-		re.doRecommendationByReviewSplitItemBase();
+		}
 		
-		hm.releaseHashMap();
-		
-		//show recommendation effect
-		Effect effect = new Effect(conWorkspace);
+		Effect effect = new Effect(conWorkspace);                // effect show
 		effect.showMAEAndRMSEEffect();
 		effect.showOverlapEffect();        
 		effect.showMAPAndNDCGEffect(15);
@@ -53,6 +57,7 @@ public class StartWorking {
 		effect.showMAPAndNDCGEffect(2);
 		effect.showMAPAndNDCGEffect(1);
 		
+		hm.releaseHashMap();
 		dbcon.closeConnection();
 	}
 
