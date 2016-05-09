@@ -13,10 +13,13 @@ import com.blake.recommendation.Recommendation;
 import com.blake.recommendation.UserBaseRecommendation;
 import com.blake.share.HashMapHarness;
 import com.blake.util.Constants;
+import com.blake.util.SystemEnviroment;
 
 public class StartWorking {
 	
 	public static void main(String args[]) {
+		
+		SystemEnviroment.getSystemInfo();
 		
 		DBConnection dbcon = new DBConnection();
 		Connection conSrc = dbcon.makeSourceConnection();         // data source

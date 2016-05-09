@@ -28,37 +28,43 @@ public class UserBaseRecommendation extends Recommendation{
 	public void doRecommendationByReviewSplitUserBase(){
     	
         System.out.println(this.getClass().getName() + "doRecommendationByReviewSplitUserBase()");
-        Integer[] uidInTestArr=new Integer[hm.uidPidRatingHMInTest.size()];
-        int uidInTestNumber=0;
-        Iterator uidPidRatingIter=hm.uidPidRatingHMInTest.keySet().iterator();
-        while(uidPidRatingIter.hasNext()){
+        Integer[] uidInTestArr = new Integer[hm.uidPidRatingHMInTest.size()];
+        int uidInTestNumber = 0;
+        Iterator uidPidRatingIter = hm.uidPidRatingHMInTest.keySet().iterator();
+        while(uidPidRatingIter.hasNext()) {
         	
-            uidInTestArr[uidInTestNumber++] =  (Integer) uidPidRatingIter.next();
+        	int user = (Integer) uidPidRatingIter.next();
+            uidInTestArr[uidInTestNumber++] = user;
         }
-        long cf_time=0;
-        long cross_time=0;
-        long mib_time=0;
-        int recommendationNumber=0; //推荐的次数
-        for(int user=0;user < uidInTestNumber;user++){
+        long cf_time = 0;
+        long cross_time = 0;
+        long mib_time = 0;
+        int recommendationNumber = 0; //推荐的次数
+        
+        for(int user=0; user < uidInTestNumber; user++) {
         	
         	//给定的用户
-        	String givenUserId = String.valueOf(uidInTestArr[user]);  
+        	String givenUserId = String.valueOf(uidInTestArr[user]); 
         	//获得给定用户的关联group
             HashMap<Integer, HashSet<Integer>> levelGroupIdHM = getLevelGroupIdHMByUid(givenUserId);  
             //获得这些group对应的item
             HashMap<String,HashSet<String>> groupItemIdHM = getGroupItemHM(levelGroupIdHM);           
             //获得给定用户评价过的所有item，计算相似度时有用
             String[] itemIdByGivenUid = getPidInTrainByUid(givenUserId);                                      
-            
             //获得验证集中给定用户购买过的商品评分
-            HashMap<Integer, Double> itemIdRatingInTrain = hm.uidPidRatingHMInTrain
-            		.get(Integer.valueOf(givenUserId));
+            HashMap<Integer, Double> itemIdRatingInTest = hm.uidPidRatingHMInTest.get(Integer.valueOf(givenUserId));
             
-            Iterator itemIdIter = itemIdRatingInTrain.keySet().iterator();
+            Iterator itemIdIter = itemIdRatingInTest.keySet().iterator();
+            int num = 0;
             while(itemIdIter.hasNext()) {
             	
+            	if(num > 5){
+            		
+            		break;
+            	}
             	//给定的itemId
-            	String givenItemId = String.valueOf(itemIdIter.next());   
+            	String givenItemId = String.valueOf(itemIdIter.next());
+            	num++;
             	//获得给定item对应的group,这些group按层次分类
                 HashMap<String,HashMap<Integer,HashSet<Integer>>> itemIdGroupIdHM = getItemGroup(givenItemId);   
                 //HashMap<String,HashMap<String,Double>> itemUserRatingHM = getItemUserRating(givenItemId);       //获得给定item对应的用户及其评分
@@ -151,7 +157,7 @@ public class UserBaseRecommendation extends Recommendation{
                 mib_time += System.currentTimeMillis() - mib_startTime;
                 //mib方法结束
                         
-                Double real_rating = itemIdRatingInTrain.get(Integer.parseInt(givenItemId));
+                Double real_rating = itemIdRatingInTest.get(Integer.parseInt(givenItemId));
                 if(real_rating == null) {
                 	
                     real_rating = new Double(-1);
@@ -236,8 +242,9 @@ public class UserBaseRecommendation extends Recommendation{
             	
                 if(!usersId[j].equals(givenUserId)){
                 	
-                    //userIdSimilarityHM.put(usersId[j], getSimilarityWithGivenUidByUid(usersId[j],itemIdArrInGroup,itemIdInGroupByGivenUid));
-                    userIdSimilarityHM.put(usersId[j], getSimilarityInAllItem(usersId[j],itemIdByGivenUid));  //按item计算相似度
+                    userIdSimilarityHM.put(usersId[j], 
+                    		getSimilarityWithGivenUidByUid(usersId[j],itemIdArrInGroup,itemIdInGroupByGivenUid));
+                    //userIdSimilarityHM.put(usersId[j], getSimilarityInAllItem(usersId[j],itemIdByGivenUid));  //按item计算相似度
                     
                 } else {
                 	
@@ -259,7 +266,7 @@ public class UserBaseRecommendation extends Recommendation{
         	
         	double totalImportance = 0;
         	double importance = 0;
-    		//获得importance
+    		//获得 importance
 	        HashMap<String,Double> groupIdImportance = new HashMap<String,Double>();
 	        try{
 	            String sql="select group_id,importance from " + Tables.group_user.getTableName()
@@ -366,7 +373,7 @@ public class UserBaseRecommendation extends Recommendation{
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	private double recommendByCF(HashMap<Integer, Double> uidRatingInTrainHashMap, HashMap<String,Double> userIdSimilarityHM, boolean itemFlag){
        
-    	if(itemFlag) {
+    	if(!itemFlag) {
         	
             return recommendByCF(uidRatingInTrainHashMap,userIdSimilarityHM);
         }

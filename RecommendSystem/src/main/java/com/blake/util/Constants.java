@@ -11,7 +11,7 @@ public class Constants {
 	/**
 	 * 用于实验的用户的个数
 	 */
-	public static int USER_NUMBER = 500;
+	public static int USER_NUMBER = 700;
 
 	/**
 	 * 分类层次数目

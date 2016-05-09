@@ -267,8 +267,11 @@ public class Group {
 			fr.close();
 			file = null;
 			fr = null;
-			System.out.println(this.getClass().getName() + " filter level " + level + "done , time cost is " 
-										+ (System.currentTimeMillis() - begin) / 1000);
+			System.out.println(this.getClass().getName() 
+					+ " filter level " 
+					+ level + "done , time cost is " 
+					+ (System.currentTimeMillis() - begin) / 1000);
+			
 		} catch (Exception e) {
 			
 			e.printStackTrace();
