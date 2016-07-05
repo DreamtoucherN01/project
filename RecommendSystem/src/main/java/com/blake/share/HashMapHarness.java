@@ -29,12 +29,15 @@ public class HashMapHarness {
 	public HashMap<Integer, Integer> userImportance = new HashMap<Integer, Integer>();
 	public String userIdInTrain[];
 	
+	public HashMap<Integer,Integer> ordercategory = new HashMap<Integer,Integer>();
+	
 	public void getHashMap() {
 		
 		System.out.println(this.getClass().getName() + " getHashMap");
 		long begin = System.currentTimeMillis();
 		
 		getUserCategoryStr();
+		getOrderCategory();
 		getCategoryItemsHM();
 		getHMInTest();
 		getHMInTrain();
@@ -51,14 +54,35 @@ public class HashMapHarness {
 		itemCategoryStr = null;
 		userImportance = null;
 		userIdInTrain = null;
+		ordercategory = null;
 	}
 
+	public void getOrderCategory(){
+		
+		PreparedStatement pre;
+		try {
+			
+			pre = con.prepareCall("SELECT categoryincre,category FROM mib.levelcategory;");
+			ResultSet rs = pre.executeQuery();
+			while(rs.next()){
+				
+				ordercategory.put(rs.getInt(1), rs.getInt(2));
+			}
+		} catch (SQLException e) {
+			
+			e.printStackTrace();
+		} finally {
+			
+			pre = null;
+		}
+	}
+	
 	public void getUserCategoryStr() {
 		
 		PreparedStatement pre;
 		try {
 			
-			pre = con.prepareCall("select item,levelcategory.categorystr from "
+			pre = con.prepareCall("select item,levelcategory.categorynewstr from "
 					+ "itemcategory,levelcategory where levelcategory.category = itemcategory.category");
 			ResultSet rs = pre.executeQuery();
 			while(rs.next()){

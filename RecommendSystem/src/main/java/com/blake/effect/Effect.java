@@ -40,7 +40,7 @@ public class Effect {
 		try {
 			String sql = "select real_rating, mib_rating, fullcf_rating, cross_rating from "
 					+ Tables.fromString("recommendation").getTableName()
-					+ " where fullcf_overlap=1";
+					+ " where mib_overlap=1";
 			PreparedStatement pre = con.prepareCall(sql);
 			ResultSet rs = pre.executeQuery();
 			while (rs.next()) {
@@ -339,19 +339,23 @@ public class Effect {
 	}
 
 	public void showMAPAndNDCGEffect(int topN) {
+		
 		// 获得推荐结果集中的用户集合
 		HashSet<String> userIdInTest = new HashSet<String>();
 		try {
+			
 			String sql = "select distinct uid from "
 					+ Tables.fromString("recommendation").getTableName();
 			PreparedStatement pre = con.prepareCall(sql);
 			ResultSet rs = pre.executeQuery();
 			while (rs.next()) {
+				
 				userIdInTest.add(rs.getString(1));
 			}
 			rs.close();
 			pre.close();
 		} catch (Exception e) {
+			
 			e.printStackTrace();
 		}
 		Iterator<String> userIdInTestIter;
@@ -367,74 +371,87 @@ public class Effect {
 		int userNumber = 0;
 
 		userIdInTestIter = userIdInTest.iterator();
+		
 		while (userIdInTestIter.hasNext()) { // 对于每一个用户进行遍历
+			
 			// 获得实际的评分
 			@SuppressWarnings("unchecked")
 			HashSet<String> RatingPid[] = new HashSet[6]; // 桶，评分为下标的item集合
 			int hasUsedNumber[] = new int[6]; // 记录每个桶中已经使用过的item数量
 			for (int i = 1; i < 6; i++) {
+				
 				RatingPid[i] = new HashSet<String>();
 			}
 			String userId = (String) userIdInTestIter.next();
 			int _topN = 0;
+			
 			// 获得该用户在验证集中的商品id及其实际评分，并放入相应桶中
 			try {
-				String sql = "select pid,real_rating from "
-						+ Tables.fromString("recommendation").getTableName() + " where uid="
-						+ userId;
+				
+				String sql = "select pid,real_rating from " + Tables.fromString("recommendation").getTableName() + " where uid=" + userId;
 				PreparedStatement pre = con.prepareCall(sql);
 				ResultSet rs = pre.executeQuery();
 				while (rs.next()) {
+					
 					RatingPid[rs.getInt(2)].add(rs.getString(1));
 					_topN++;
 				}
 				rs.close();
 				pre.close();
 			} catch (Exception e) {
+				
 				e.printStackTrace();
 			}
 			if (_topN < topN) {
+				
 				continue;
 			}
 
 			// 计算cf方法的map
 			for (int i = 1; i < 6; i++) {
+				
 				hasUsedNumber[i] = 0;
 			}
 			String cf_pid[] = new String[topN]; // 按推荐评分从大到小排列的item集合
 			int cf_pid_number = 0;
 			try {
-				String sql = "select pid from "
-						+ Tables.fromString("recommendation").getTableName()
-						+ " where uid="
-						+ userId
-						+ " and mib_overlap>0 order by fullcf_rating desc limit "
-						+ topN;
+				
+				String sql = "select pid from " + Tables.fromString("recommendation").getTableName()
+						+ " where uid=" + userId
+						+ " and fullcf_overlap > 0 order by fullcf_rating desc limit " + topN;
 				PreparedStatement pre = con.prepareCall(sql);
 				ResultSet rs = pre.executeQuery();
 				while (rs.next()) {
+					
 					cf_pid[cf_pid_number++] = rs.getString(1);
 				}
 				rs.close();
 				pre.close();
 			} catch (Exception e) {
+				
 				e.printStackTrace();
 			}
 			double cf_AE = 0; // 单个用户的MAE
 			for (int i = 0; i < cf_pid_number; i++) { // i+1即为预测评分的排序
+				
 				int index_in_real = 0; // 实际评分的排序
 				for (int j = 5; j >= 1; j--) {
+					
 					if (RatingPid[j].contains(cf_pid[i])) {
+						
 						hasUsedNumber[j]++; // 相应桶中的计数加一
 						index_in_real += hasUsedNumber[j];
 						break;
 					} else {
+						
 						index_in_real += RatingPid[j].size();
 					}
 				}
 				if (i + 1 > index_in_real) { // 实际的下标与推测的下标之比即为单个的MAE
+					
 					cf_AE += index_in_real * 1.0 / (i + 1);
 				} else {
+					
 					cf_AE += (i + 1) * 1.0 / index_in_real;
 				}
 			}
@@ -450,37 +467,42 @@ public class Effect {
 			String cross_pid[] = new String[topN];
 			int cross_pid_number = 0;
 			try {
-				String sql = "select pid from "
-						+ Tables.fromString("recommendation").getTableName()
-						+ " where uid="
-						+ userId
-						+ " and mib_overlap>0 order by cross_rating desc limit "
-						+ topN;
+				String sql = "select pid from " + Tables.fromString("recommendation").getTableName()
+						+ " where uid=" + userId
+						+ " and cross_overlap > 0 order by cross_rating desc limit " + topN;
 				PreparedStatement pre = con.prepareCall(sql);
 				ResultSet rs = pre.executeQuery();
 				while (rs.next()) {
+					
 					cross_pid[cross_pid_number++] = rs.getString(1);
 				}
 				rs.close();
 				pre.close();
 			} catch (Exception e) {
+				
 				e.printStackTrace();
 			}
 			double cross_AE = 0;
 			for (int i = 0; i < cross_pid_number; i++) {
+				
 				int index_in_real = 0;
 				for (int j = 5; j >= 1; j--) {
+					
 					if (RatingPid[j].contains(cross_pid[i])) {
+						
 						hasUsedNumber[j]++;
 						index_in_real += hasUsedNumber[j];
 						break;
 					} else {
+						
 						index_in_real += RatingPid[j].size();
 					}
 				}
 				if (i + 1 > index_in_real) {
+					
 					cross_AE += index_in_real * 1.0 / (i + 1);
 				} else {
+					
 					cross_AE += (i + 1) * 1.0 / index_in_real;
 				}
 			}
@@ -489,43 +511,53 @@ public class Effect {
 			cross_NDCG += getNDCG(cross_pid, RatingPid);
 			// 计算cross方法的map结束
 
-			// 计算mlb方法的map
+			// 计算mib方法的map
 			for (int i = 1; i < 6; i++) {
+				
 				hasUsedNumber[i] = 0;
 			}
 			String mib_pid[] = new String[topN];
 			int mib_pid_number = 0;
 			try {
+				
 				String sql = "select pid from "
 						+ Tables.fromString("recommendation").getTableName() + " where uid="
 						+ userId
-						+ " and mib_overlap>0 order by mib_rating desc limit "
+						+ " and mib_overlap > 0 order by mib_rating desc limit "
 						+ topN;
 				PreparedStatement pre = con.prepareCall(sql);
 				ResultSet rs = pre.executeQuery();
 				while (rs.next()) {
+					
 					mib_pid[mib_pid_number++] = rs.getString(1);
 				}
 				rs.close();
 				pre.close();
 			} catch (Exception e) {
+				
 				e.printStackTrace();
 			}
 			double mib_AE = 0;
 			for (int i = 0; i < mib_pid_number; i++) {
+				
 				int index_in_real = 0;
 				for (int j = 5; j >= 1; j--) {
+					
 					if (RatingPid[j].contains(mib_pid[i])) {
+						
 						hasUsedNumber[j]++;
 						index_in_real += hasUsedNumber[j];
 						break;
 					} else {
+						
 						index_in_real += RatingPid[j].size();
 					}
 				}
 				if (i + 1 > index_in_real) {
+					
 					mib_AE += index_in_real * 1.0 / (i + 1);
 				} else {
+					
 					mib_AE += (i + 1) * 1.0 / index_in_real;
 				}
 			}
@@ -536,13 +568,14 @@ public class Effect {
 
 			userNumber++;
 		}
-		System.out.println("topN:" + topN);
+		System.out.println("topN: " + topN + " userNumber: " + userNumber);
 		System.out.println("cf_MAP=" + cf_MAP / userNumber);
 		System.out.println("cross_MAP=" + cross_MAP / userNumber);
 		System.out.println("mib_MAP=" + mib_MAP / userNumber);
 		System.out.println("cf_NDCG=" + cf_NDCG / userNumber);
 		System.out.println("cross_NDCG=" + cross_NDCG / userNumber);
 		System.out.println("mib_NDCG=" + mib_NDCG / userNumber);
+		System.out.println();
 	}
 
 	/**
@@ -555,30 +588,43 @@ public class Effect {
 	 * @return
 	 */
 	private double getNDCG(String[] guess_pid, HashSet<String> RatingPid[]) {
+		
+		double dcg = 0;
 		double ndcg = 0;
 		int number[] = new int[RatingPid.length];
 		for (int i = 1; i < RatingPid.length; i++) {
+			
 			number[i] = 0; // 计算每个桶中使用过的item数量
 		}
 		for (int i = 0; i < guess_pid.length; i++) {
+			
 			for (int j = 5; j >= 1; j--) {
+				
 				if (RatingPid[j].contains(guess_pid[i])) {
-					ndcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1) * Math.log(2); // 假设公式中的r(j)即为评分
-					number[j]++;
+					
+					dcg += (Math.pow(2, j) - 1) / (Math.log(2 + i) / Math.log(2)); // 假设公式中的r(j)即为评分
+					number[j] ++;
 				}
 			}
 		}
 		double idcg = 0;
-		int i = 0;
+		
 		for (int j = 5; j >= 1; j--) {
+			
+			int i = 1;
 			while (number[j] > 0) {
-				idcg += (Math.pow(2, j) - 1) / Math.log(1 + i + 1) * Math.log(2);
-				i++;
+				
+				idcg += (Math.pow(2, j) - 1) / (Math.log(1 + i) / Math.log(2)); // 假设公式中的r(j)即为评分
 				number[j]--;
 			}
+			i++;
 		}
 		if (Math.abs(idcg) > Constants.DOUBLE_PRECISION) {
-			ndcg = ndcg / idcg;
+			
+			ndcg = dcg / idcg;
+		} else {
+			
+			ndcg = dcg;
 		}
 		return ndcg;
 	}

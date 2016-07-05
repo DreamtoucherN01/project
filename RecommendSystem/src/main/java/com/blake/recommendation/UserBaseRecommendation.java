@@ -2,6 +2,7 @@ package com.blake.recommendation;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,6 +16,8 @@ import com.blake.util.Constants;
 import com.blake.util.MyArray;
 
 public class UserBaseRecommendation extends Recommendation{
+	
+	public boolean userfilter = false;
 
 	public UserBaseRecommendation(HashMapHarness hm, DatabaseOperation dbo) {
 		
@@ -55,18 +58,21 @@ public class UserBaseRecommendation extends Recommendation{
             HashMap<Integer, Double> itemIdRatingInTest = hm.uidPidRatingHMInTest.get(Integer.valueOf(givenUserId));
             
             Iterator itemIdIter = itemIdRatingInTest.keySet().iterator();
-            int num = 0;
+//            int num = 0;
             while(itemIdIter.hasNext()) {
             	
-            	if(num > 5){
-            		
-            		break;
-            	}
+//            	if(userfilter || num > 21){
+//            		
+//            		break;
+//            	}
             	//给定的itemId
             	String givenItemId = String.valueOf(itemIdIter.next());
-            	num++;
+//            	num++;
             	//获得给定item对应的group,这些group按层次分类
                 HashMap<String,HashMap<Integer,HashSet<Integer>>> itemIdGroupIdHM = getItemGroup(givenItemId);   
+                if(itemIdGroupIdHM.get(givenItemId) == null) {
+                	continue;
+                }
                 //HashMap<String,HashMap<String,Double>> itemUserRatingHM = getItemUserRating(givenItemId);       //获得给定item对应的用户及其评分
                 
                 //获得购买过givenItemId的所有用户及其评分
@@ -86,6 +92,9 @@ public class UserBaseRecommendation extends Recommendation{
                     if(!userId.equals(givenUserId)) {
                     	
                         userIdSimilarityHM.put(userId, getSimilarityInAllItem(userId, itemIdByGivenUid));
+                    } else {
+                    	
+                    	userIdSimilarityHM.put(userId, 1.0);
                     }
                 }
                 int cf_overFlag=1;
@@ -97,32 +106,32 @@ public class UserBaseRecommendation extends Recommendation{
                 cf_time += System.currentTimeMillis() - cf_startTime;
                 //CF方法结束
                         
-                //用cross方法推荐
-                long cross_startTime = System.currentTimeMillis();
-                int cross_overFlag = 1;
+//                //用cross方法推荐
+//                long cross_startTime = System.currentTimeMillis();
+                int cross_overFlag = 0;
                 double cross_guessRating;
-                //注意到如果cf方法不能推荐，则cross一定不能推荐
-                if(cf_guessRating<0) {
-                	
-                    cross_guessRating = -1;
-                } else {
-                	
-                    cross_guessRating = recommendByCross(
-                    		uidRatingInTrainHashMap,
-                    		givenUserId,
-                    		itemIdByGivenUid,
-                    		levelGroupIdHM,
-                    		itemIdGroupIdHM.get(givenItemId),
-                    		Constants.CATEGORY_LEVEL_NUM - 1,
-                    		groupItemIdHM);
-                }
-                if(cross_guessRating < 0) {
-                	
+//                //注意到如果cf方法不能推荐，则cross一定不能推荐
+//                if(cf_guessRating<0) {
+//                	
+//                    cross_guessRating = -1;
+//                } else {
+//                	
+//                    cross_guessRating = recommendByCross(
+//                    		uidRatingInTrainHashMap,
+//                    		givenUserId,
+//                    		itemIdByGivenUid,
+//                    		levelGroupIdHM,
+//                    		itemIdGroupIdHM.get(givenItemId),
+//                    		Constants.CATEGORY_LEVEL_NUM - 1,
+//                    		groupItemIdHM);
+//                }
+//                if(cross_guessRating < 0) {
+//                	
                     cross_guessRating = cf_guessRating;
-                    cross_overFlag  = 0;
-                }
-                cross_time += System.currentTimeMillis() - cross_startTime;
-                //cross方法结束
+//                    cross_overFlag  = 0;
+//                }
+//                cross_time += System.currentTimeMillis() - cross_startTime;
+//                //cross方法结束
                 
                 //用mib方法推荐
                 long mib_startTime = System.currentTimeMillis();
@@ -172,6 +181,9 @@ public class UserBaseRecommendation extends Recommendation{
                 		cross_overFlag,
                 		mib_guessRating,
                 		mib_overFlag);
+//                System.out.println("givenItemId="+givenItemId+",givenUserId="+givenUserId);
+//                System.out.println("\treal_rating="+real_rating.doubleValue()+",cf_guessRating="+cf_guessRating+",cross_guessRating="+cross_guessRating+",mib_guessRating="+mib_guessRating);
+//                System.out.println("-------------------------------------------------------------------------");
                 recommendationNumber++;
             }
             if(recommendationNumber > Constants.RECOMMENDATION_TIMES) {
@@ -207,12 +219,17 @@ public class UserBaseRecommendation extends Recommendation{
         }
         HashSet<Integer> groupIdWithGivenUidInLevel = levelGroupIdHM.get(new Integer(level));
         HashSet<Integer> groupIdWithGivenItemIdInLevel = hashMap.get(new Integer(level));
-        if(groupIdWithGivenUidInLevel == null || groupIdWithGivenItemIdInLevel == null){
+        if(groupIdWithGivenUidInLevel == null ) {
+        	
+        	return -1;
+        }
+        if( groupIdWithGivenItemIdInLevel == null){
         	
             return -1;
         }
-        Integer[] groupIdWithGivenUidGivenItem = MyArray.intersect(
-        		groupIdWithGivenUidInLevel.toArray(templateStr), groupIdWithGivenItemIdInLevel.toArray(templateStr));
+        Integer[] groupIdWithGivenUidGivenItem = //groupIdWithGivenUidInLevel.toArray(templateStr);
+        		MyArray.intersect(groupIdWithGivenUidInLevel.toArray(templateStr), groupIdWithGivenItemIdInLevel.toArray(templateStr));
+//        System.out.println("groupIdWithGivenUidGivenItem " + groupIdWithGivenUidGivenItem.length + "\n");
         if(groupIdWithGivenUidGivenItem.length == 0) {
         	
             return -1;
@@ -221,7 +238,7 @@ public class UserBaseRecommendation extends Recommendation{
         HashMap<Integer, Integer> GroupIdGUserLengthHM = new HashMap<Integer, Integer>();
         HashMap<Integer, Integer> GroupIdratingLengthHM = new HashMap<Integer, Integer>();
         int uidLength = 0;
-        for(int i=0;i<groupIdWithGivenUidGivenItem.length;i++) {
+        for(int i=0; i < groupIdWithGivenUidGivenItem.length; i++) {
         	
         	int ratingLength = 0;
             HashMap<String, Double> userIdSimilarityHM = new HashMap<String, Double>();
@@ -237,21 +254,36 @@ public class UserBaseRecommendation extends Recommendation{
             	
             	continue;
             }
-            
             for(int j=0;j<usersId.length;j++) {
             	
+//            	if(uidRatingInTrainHashMap.get(Integer.valueOf(usersId[j]))!=null){
+//            		
+//            		if(uidRatingInTrainHashMap.get(Integer.valueOf(usersId[j]))!=null&&!usersId[j].equals(givenUserId)){
+//            			
+////	                    userIdSimilarityHM.put(usersId[j], getSimilarityWithGivenUidByUid(usersId[j],itemIdArrInGroup,itemIdInGroupByGivenUid));
+////	                    userIdSimilarityHM.put(usersId[j], 1.0);    //每个用户的相似度一样
+////	                    userIdSimilarityHM.put(usersId[j], getSimilarityInAllItem(usersId[j],itemIdByGivenUid));  //按item计算相似度
+//            		}
+//                }
                 if(!usersId[j].equals(givenUserId)){
                 	
-                    userIdSimilarityHM.put(usersId[j], 
-                    		getSimilarityWithGivenUidByUid(usersId[j],itemIdArrInGroup,itemIdInGroupByGivenUid));
-                    //userIdSimilarityHM.put(usersId[j], getSimilarityInAllItem(usersId[j],itemIdByGivenUid));  //按item计算相似度
-                    
+//                    userIdSimilarityHM.put(usersId[j], 
+//                    		getSimilarityWithGivenUidByUid(usersId[j], itemIdArrInGroup, itemIdInGroupByGivenUid));
+                	double similarity = getSimilarityInAllItem(usersId[j], itemIdInGroupByGivenUid);
+                	if(similarity < 0.00000001) {
+                		
+                		continue;
+                	}
+                    userIdSimilarityHM.put(usersId[j], similarity);  //按item计算相似度
+//                	userIdSimilarityHM.put(usersId[j], 1.0);
                 } else {
                 	
-                	userIdSimilarityHM.put(usersId[j], 1.0);    //每个用户的相似度一样
+                	userIdSimilarityHM.put(usersId[j], 1.0);
                 }
+                System.out.println("userIdSimilarityHM: "+ userIdSimilarityHM);
                 ratingLength += hm.uidPidRatingHMInTrain.get(Integer.valueOf(usersId[j])).size();
             }
+//            System.out.println("userIdSimilarityHM2 " + userIdSimilarityHM.entrySet().size());
             double guessRating = recommendByCF(uidRatingInTrainHashMap, userIdSimilarityHM, Constants.WEIGHTNEEDCALCULATED);
             if(guessRating > 0) {
             	
@@ -260,6 +292,8 @@ public class UserBaseRecommendation extends Recommendation{
                 GroupIdratingLengthHM.put(groupIdWithGivenUidGivenItem[i], ratingLength);
             }
         }
+        
+//        System.out.println("GroupIdGuessRatingHM : "+ GroupIdGuessRatingHM.size());
         
         double cross_rating = 0;
         if(Constants.IMPORTANCEINCLUDED) {
@@ -320,7 +354,7 @@ public class UserBaseRecommendation extends Recommendation{
         		Entry<Integer,Double> entry = (Entry<Integer,Double>) it.next();
         		int groupid = entry.getKey();
         		double propation = (double)(GroupIdGUserLengthHM.get(groupid)) / (double)uidLength 
-        				+ (double)(hm.uidPidRatingHMInTrain.get(Integer.valueOf(givenUserId)).size()) 
+        				* (double)(hm.uidPidRatingHMInTrain.get(Integer.valueOf(givenUserId)).size()) 
         					/ (double)(GroupIdratingLengthHM.get(groupid));
         		totalPropation += propation;
         		cross_rating += entry.getValue().doubleValue() * propation;

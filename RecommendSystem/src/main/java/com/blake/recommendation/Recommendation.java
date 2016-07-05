@@ -102,6 +102,10 @@ public class Recommendation {
         HashSet<String> pidHS=new HashSet<String>();
 
     	HashMap pidRating = hm.uidPidRatingHMInTrain.get(Integer.valueOf(uid));
+    	if(null == pidRating){
+    		
+    		return new String[0];
+    	}
     	Iterator it = pidRating.keySet().iterator();
         while(it.hasNext()){
         	
@@ -127,7 +131,8 @@ public class Recommendation {
 			ResultSet rs = pre.executeQuery();
 			while (rs.next()) {
 				
-				itemIdHS.add(rs.getString(1).trim());
+				String itemsId = rs.getString(1);
+				itemIdHS.add(itemsId);
 			}
 			rs.close();
 			pre.close();
@@ -233,7 +238,7 @@ public class Recommendation {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	protected HashMap<String,HashSet<String>> getGroupItemHM(HashMap<Integer, HashSet<Integer>> levelGroupIdHM){
     	
-        HashMap<String,HashSet<String>> groupItemHM=new HashMap<String,HashSet<String>>();
+        HashMap<String,HashSet<String>> groupItemHM = new HashMap<String,HashSet<String>>();
         Iterator iter = levelGroupIdHM.values().iterator();
         while(iter.hasNext()){
         	
@@ -243,9 +248,9 @@ public class Recommendation {
             	
             	Integer groupId = (Integer) groupIdIter.next();
                 HashSet<String> itemHS = groupItemHM.get(String.valueOf(groupId));
-                if(itemHS==null){
+                if(itemHS == null){
                 	
-                    itemHS=new HashSet();
+                    itemHS = new HashSet();
                 }
                 itemHS.addAll(getItemIdHSByGroupId(Integer.valueOf(groupId)));
                 groupItemHM.put(String.valueOf(groupId), itemHS);

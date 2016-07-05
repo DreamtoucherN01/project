@@ -107,6 +107,7 @@ public class UserBasedInput {
 							StringBuilder userData = new StringBuilder("");
 							int total = sumOfCate(categoryNumber, i1);
 							for (int j = offset; j <= total; j++) { 
+//							for (int j = 0; j <= totalCategoryNumber; j++) { 
 																	
 								if (reviewFlag[j] == true) {
 									

@@ -11,7 +11,7 @@ public class Constants {
 	/**
 	 * 用于实验的用户的个数
 	 */
-	public static int USER_NUMBER = 700;
+	public static int USER_NUMBER = 500;
 
 	/**
 	 * 分类层次数目
@@ -46,7 +46,7 @@ public class Constants {
 	/**
 	 * 推荐时实验次数
 	 */
-	public static int RECOMMENDATION_TIMES = 100;
+	public static int RECOMMENDATION_TIMES = 1000;
 
 	/**
 	 * double类型的最大精度
@@ -81,12 +81,12 @@ public class Constants {
 	/**
 	 * 训练集测试集比率
 	 */
-	public static double TRAIN_TEST_RATIO = 0.9;
+	public static double TRAIN_TEST_RATIO = 0.95;
 	
 	/**
 	 * importance switch
 	 */
-	public static boolean IMPORTANCEINCLUDED = false;
+	public static boolean IMPORTANCEINCLUDED = true;
 	
 	/**
 	 * 

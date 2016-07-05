@@ -190,11 +190,13 @@ public class Group {
 						
 						Map.Entry<Integer, String[]> entry = (Map.Entry<Integer, String[]>) iter.next();
 						
+//						if (MyArray.isSimilarContain(itemsArr, entry.getValue())) { 
 						if (MyArray.isContain(itemsArr, entry.getValue())) { 
 							
 							usersIdSB.append(entry.getKey().intValue()).append(" ");
 						}
 					}
+//					System.out.println(" user length " + usersIdSB.length() + " detail " + usersIdSB);
 					// 计算item与整个group的sim
 					// 记录itemsArr中任何两个的相似度，下标是itemsArr中的下标
 					double simArr[][] = new double[itemsArr.length][itemsArr.length]; 
@@ -253,10 +255,10 @@ public class Group {
 						simDoubleArr[i] = simDoubleArr[i] / simTotal;
 					}
 					String usersIdArr[] = usersIdSB.toString().split(" ");
-					String itemsb = getItemsIdByCategoryId(itemsArr); //attention this item is category
+					String itemsb = getItemsIdByCategoryId(itemsArr); //attention this item is category of rearranged
 					int totalReview = getTotalReviewByUserIdItemId(usersIdArr,itemsb.trim().split(" "));
 
-					dbo.insertIntoGroupTable(level, itemsb.trim().toString(), support, usersIdSB.toString(), totalReview, itemsb.length());
+					dbo.insertIntoGroupTable(level, itemsb.substring(0, itemsb.length()/10).trim().toString(), support, usersIdSB.toString(), totalReview, itemsb.length());
 					dbo.insertIntoGroupCategoryTable(groupId, itemsArr, simDoubleArr);
 					dbo.insertIntoGroupUserTable(groupId, usersIdArr, itemsb.trim().split(" "), hm);
 					groupId++;
@@ -283,9 +285,9 @@ public class Group {
 		StringBuilder itemsb = new StringBuilder();
 		for(String cat : categoryIdArr) {
 			
-			if(null != hm.categoryItems.get(Integer.valueOf(cat))) {
+			if(null != hm.categoryItems.get(hm.ordercategory.get(Integer.valueOf(cat)))) {
 				
-				String itemsId = hm.categoryItems.get(Integer.valueOf(cat));
+				String itemsId = hm.categoryItems.get(hm.ordercategory.get(Integer.valueOf(cat)));
 				if (itemsId != null) {
 					
 					itemsb.append(itemsId.trim() + " ");
@@ -381,7 +383,7 @@ public class Group {
 		
 		if(i == 2) {
 			
-			return 50;
+			return 100;
 		}
 		if(i == 1) {
 			

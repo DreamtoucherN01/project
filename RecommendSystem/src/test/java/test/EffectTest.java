@@ -1,3 +1,5 @@
+package test;
+
 import java.sql.Connection;
 
 import org.junit.Test;
@@ -16,11 +18,11 @@ public class EffectTest{
 		Effect effect = new Effect(conWorkspace);   
 		effect.showMAEAndRMSEEffect();
 		effect.showOverlapEffect();        
+		effect.showMAPAndNDCGEffect(20);
 		effect.showMAPAndNDCGEffect(15);
-		effect.showMAPAndNDCGEffect(10);
+		effect.showMAPAndNDCGEffect(8);
 		effect.showMAPAndNDCGEffect(5);
 		effect.showMAPAndNDCGEffect(3);
-		effect.showMAPAndNDCGEffect(2);
 		effect.showMAPAndNDCGEffect(1);
 		
 	}

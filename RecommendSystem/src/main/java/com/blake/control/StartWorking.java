@@ -3,6 +3,7 @@ package com.blake.control;
 import java.sql.Connection;
 
 import com.blake.category.Group;
+import com.blake.data.organize.ReArrangeCategory;
 import com.blake.data.process.DataTransfer;
 import com.blake.database.DBConnection;
 import com.blake.database.generator.DatabaseOperation;
@@ -26,11 +27,15 @@ public class StartWorking {
 		Connection conWorkspace = dbcon.makeWorkspaceConnection();// data processor place
 		
 		DatabaseOperation dbo = new DatabaseOperationImpl(conWorkspace);
+		
 //		dbo.createTables();
 //		dbo.truncateTables();
 //		
 //		DataTransfer df = new DataTransfer(conSrc, conWorkspace); // transfer data
 //		df.dataTransfer(); dbcon.closeConnection(conSrc); System.gc();
+//		
+//		ReArrangeCategory ra = new ReArrangeCategory(conWorkspace);
+//		ra.reArrangeCategory();
 		
 		HashMapHarness hm = new HashMapHarness(conWorkspace);    // trade space for mining time
 		hm.getHashMap();
@@ -51,13 +56,15 @@ public class StartWorking {
 		}
 		
 		Effect effect = new Effect(conWorkspace);                // effect show
+		
 		effect.showMAEAndRMSEEffect();
-		effect.showOverlapEffect();        
+		effect.showOverlapEffect();  
+		
+		effect.showMAPAndNDCGEffect(20);
 		effect.showMAPAndNDCGEffect(15);
 		effect.showMAPAndNDCGEffect(10);
 		effect.showMAPAndNDCGEffect(5);
 		effect.showMAPAndNDCGEffect(3);
-		effect.showMAPAndNDCGEffect(2);
 		effect.showMAPAndNDCGEffect(1);
 		
 		hm.releaseHashMap();

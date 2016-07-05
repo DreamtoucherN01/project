@@ -255,6 +255,42 @@ public class MyArray {
     }
     
     //判断son集合是否包含在father集合里面
+    public static boolean isSimilarContain(String[] son,String[] father) {
+    	
+        Arrays.sort(father);
+        Arrays.sort(son);
+        int i = 0, j = 0;
+        for(; i < son.length && j < father.length; )
+        {
+        	
+            if(son[i].compareTo(father[j]) < 0){
+            	
+                i++;
+            } else if(son[i].compareTo(father[j]) > 0){
+            	
+                j++;
+            } else {
+            	
+            	i++;
+            	j++;
+            }
+        }
+        if(j == 0 || i == 0) {
+        	
+        	return false;
+        }
+        if(i == son.length && (j == i ||j > son.length - 2)) {
+        	
+        	return true;
+        }
+        if(j == father.length && (j == i ||i > father.length - 2)) {
+        	
+        	return true;
+        }
+        return false;
+    }
+    
+    //判断son集合是否包含在father集合里面
     public static boolean isContain(int[] son,int[] father){
         Arrays.sort(father);
         for(int i=0;i<son.length;i++)

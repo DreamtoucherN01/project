@@ -74,7 +74,8 @@ public class DatabaseOperationImpl  extends DatabaseOperation {
 				try {
 					pre.setInt(1, groupId);
 					pre.setInt(2, Integer.parseInt(itemsArr[i]));
-					pre.setDouble(3, simDoubleArr[i]);
+//					pre.setDouble(3, simDoubleArr[i]);
+					pre.setDouble(3, 0.0);
 					pre.executeUpdate();
 				} catch (Exception ex) {
 					ex.printStackTrace();
