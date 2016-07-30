@@ -106,32 +106,32 @@ public class UserBaseRecommendation extends Recommendation{
                 cf_time += System.currentTimeMillis() - cf_startTime;
                 //CF方法结束
                         
-//                //用cross方法推荐
-//                long cross_startTime = System.currentTimeMillis();
+                //用cross方法推荐
+                long cross_startTime = System.currentTimeMillis();
                 int cross_overFlag = 0;
                 double cross_guessRating;
-//                //注意到如果cf方法不能推荐，则cross一定不能推荐
-//                if(cf_guessRating<0) {
-//                	
-//                    cross_guessRating = -1;
-//                } else {
-//                	
-//                    cross_guessRating = recommendByCross(
-//                    		uidRatingInTrainHashMap,
-//                    		givenUserId,
-//                    		itemIdByGivenUid,
-//                    		levelGroupIdHM,
-//                    		itemIdGroupIdHM.get(givenItemId),
-//                    		Constants.CATEGORY_LEVEL_NUM - 1,
-//                    		groupItemIdHM);
-//                }
-//                if(cross_guessRating < 0) {
-//                	
+                //注意到如果cf方法不能推荐，则cross一定不能推荐
+                if(cf_guessRating<0) {
+                	
+                    cross_guessRating = -1;
+                } else {
+                	
+                    cross_guessRating = recommendByCross(
+                    		uidRatingInTrainHashMap,
+                    		givenUserId,
+                    		itemIdByGivenUid,
+                    		levelGroupIdHM,
+                    		itemIdGroupIdHM.get(givenItemId),
+                    		0,
+                    		groupItemIdHM);
+                }
+                if(cross_guessRating < 0) {
+                	
                     cross_guessRating = cf_guessRating;
-//                    cross_overFlag  = 0;
-//                }
-//                cross_time += System.currentTimeMillis() - cross_startTime;
-//                //cross方法结束
+                    cross_overFlag  = 0;
+                }
+                cross_time += System.currentTimeMillis() - cross_startTime;
+                //cross方法结束
                 
                 //用mib方法推荐
                 long mib_startTime = System.currentTimeMillis();
@@ -143,7 +143,7 @@ public class UserBaseRecommendation extends Recommendation{
                     mib_guessRating = -1;
                 }else{
                 	
-                    for(int j = Constants.CATEGORY_LEVEL_NUM - 1;j >= 0; j--){
+                    for(int j = 0;j <= Constants.CATEGORY_LEVEL_NUM - 1; j++){
                         mib_guessRating = recommendByCross (
                         		uidRatingInTrainHashMap,
                         		givenUserId,

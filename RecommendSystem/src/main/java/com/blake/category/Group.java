@@ -89,15 +89,16 @@ public class Group {
 		}
 		HashSet<Integer> filterSet = new HashSet<Integer>(); // 记录所有已经覆盖过的category
 		String file_separator = System.getProperty("file.separator");
-		for (int i = Constants.CATEGORY_LEVEL_NUM - 1; i > 0; i--) {
+		for (int i = Constants.CATEGORY_LEVEL_NUM - 1; i >= 0; i--) {
+//		for (int i = 0; i >= 0; i--) {
 			
 			System.out.println(this.getClass().getName() + " mine level " + i);
 			
 			HashSet<Integer> leftCategory = filterCategory(filterSet , categoryHashMap[i]);
-			if (leftCategory.isEmpty()) {
-				
-				continue;
-			}
+//			if (leftCategory.isEmpty()) {
+//				
+//				continue;
+//			}
 			
 			int num = getCateLevel(i);
 			
@@ -166,7 +167,7 @@ public class Group {
 				int support = Integer.parseInt(line.substring(line.indexOf("(") + 1, line.indexOf(")")));
 				String itemsArr[] = items.split(" ");
 				
-				if (itemsArr.length > 1 && haveUncoveredCategory(itemsArr, leftCategory)) { 
+				if (itemsArr.length > 1 && haveUncoveredCategory(itemsArr, leftCategory) || level == 0) { 
 					
 					for (int i = 0; i < itemsArr.length; i++) {
 						
@@ -254,15 +255,27 @@ public class Group {
 						
 						simDoubleArr[i] = simDoubleArr[i] / simTotal;
 					}
-					String usersIdArr[] = usersIdSB.toString().split(" ");
-					String itemsb = getItemsIdByCategoryId(itemsArr); //attention this item is category of rearranged
-					int totalReview = getTotalReviewByUserIdItemId(usersIdArr,itemsb.trim().split(" "));
-
-					dbo.insertIntoGroupTable(level, itemsb.substring(0, itemsb.length()/10).trim().toString(), support, usersIdSB.toString(), totalReview, itemsb.length());
-					dbo.insertIntoGroupCategoryTable(groupId, itemsArr, simDoubleArr);
-					dbo.insertIntoGroupUserTable(groupId, usersIdArr, itemsb.trim().split(" "), hm);
-					groupId++;
 					
+					String usersIdArr[] = usersIdSB.toString().split(" ");
+					if(level == 0) {
+						
+						
+						int totalReview = getTotalReviewByUserIdItemId(usersIdArr,itemsArr);
+						dbo.insertIntoGroupTable(level, items.trim(), support, usersIdSB.toString(), totalReview, itemsArr.length);
+						dbo.insertIntoGroupCategoryTable(groupId, itemsArr, simDoubleArr);
+						dbo.insertIntoGroupUserTable(groupId, usersIdArr, itemsArr, hm);
+						
+					} else {
+						
+						
+						String itemsb = getItemsIdByCategoryId(itemsArr); //attention this item is category of rearranged
+						int totalReview = getTotalReviewByUserIdItemId(usersIdArr,itemsb.trim().split(" "));
+
+						dbo.insertIntoGroupTable(level, itemsb.substring(0, itemsb.length()/10).trim().toString(), support, usersIdSB.toString(), totalReview, itemsb.length());
+						dbo.insertIntoGroupCategoryTable(groupId, itemsArr, simDoubleArr);
+						dbo.insertIntoGroupUserTable(groupId, usersIdArr, itemsb.trim().split(" "), hm);
+					}
+					groupId++;
 				}
 			}
 			reader.close();

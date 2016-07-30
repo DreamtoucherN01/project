@@ -36,10 +36,10 @@ public class StartWorking {
 //		
 //		ReArrangeCategory ra = new ReArrangeCategory(conWorkspace);
 //		ra.reArrangeCategory();
-		
+//		
 		HashMapHarness hm = new HashMapHarness(conWorkspace);    // trade space for mining time
 		hm.getHashMap();
-		
+//		
 //		Group ca = new Group(hm, dbo);
 //		ca.mineData();                                           // mine data
 		 

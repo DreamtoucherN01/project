@@ -81,6 +81,7 @@ public class UserBasedInput {
             PreparedStatement pre=conWorkspace.prepareCall(sql);
             ResultSet rs=pre.executeQuery();
 			int lastUser = -1;
+			StringBuilder sb = new StringBuilder();
             while(rs.next()){
             	
             	int user=rs.getInt(1);
@@ -93,10 +94,21 @@ public class UserBasedInput {
 					
 					categoryId = categoryId.trim();
 				}
+				
 				if (user != lastUser) {
+					
+					if(sb.length() != 0) {
+						
+						bwWithoutUser[0].write(sb.toString());
+						bwWithoutUser[0].newLine();
+						bwWithUser[0].write(lastUser + " " + sb.toString());
+						bwWithUser[0].newLine();
+					}
+					sb = new StringBuilder();
 					
 					if (lastUser != -1) {
 						
+						//在不同的层次写入item所处的category
 						for (int i1 = 0; i1 < Constants.CATEGORY_LEVEL_NUM; i1++) {
 							
 							int offset = 0;
@@ -130,6 +142,11 @@ public class UserBasedInput {
 					}
 					lastUser = user;
 				}
+				if(Integer.valueOf(item) < 33000) {
+					
+					sb.append(item + " ");
+				}
+				
 				String categoryIdArr[] = categoryId.trim().split(" ");
 				for (int i1 = 0; i1 < categoryIdArr.length; i1++) {
 					
